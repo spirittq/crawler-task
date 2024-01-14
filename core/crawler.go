@@ -15,11 +15,11 @@ var reAvailability = regexp.MustCompile(`\d+`)
 var rePrice = regexp.MustCompile(`\d+\.\d+`)
 
 type ProductData struct {
-	Name            string           `validate:"required"`
-	Availability    *int             `validate:"required"`
-	UPC             string           `validate:"required"`
-	PriceWithoutTax *decimal.Decimal `validate:"required"`
-	Tax             *decimal.Decimal `validate:"required"`
+	Name            string               `validate:"required" json:"name"`
+	Availability    *int                 `validate:"required" json:"availability"`
+	UPC             string               `validate:"required" json:"upc"`
+	PriceWithoutTax *utils.CustomDecimal `validate:"required" json:"price_without_tax"`
+	Tax             *utils.CustomDecimal `validate:"required" json:"tax"`
 }
 
 func (pd *ProductData) parseAvailabilty(availability string) {
@@ -41,9 +41,9 @@ func (pd *ProductData) parcePrice(price string, isTax bool) {
 	}
 
 	if isTax {
-		pd.Tax = &digitsDecimal
+		pd.Tax = &utils.CustomDecimal{Decimal: digitsDecimal}
 	} else {
-		pd.PriceWithoutTax = &digitsDecimal
+		pd.PriceWithoutTax = &utils.CustomDecimal{Decimal: digitsDecimal}
 	}
 }
 
@@ -62,14 +62,18 @@ func Crawling() {
 		colly.AllowedDomains(utils.GetEnvOrDefault("ALLOWED_DOMAIN", "")),
 	)
 	nested := c.Clone()
+	c.Async = true
+	c.Limit(&colly.LimitRule{DomainGlob: "*", Parallelism: utils.GetEnvAsIntOrDefault("ASYNC_COUNT", 5)})
 
 	nested.OnHTML("article.product_page", func(h *colly.HTMLElement) {
-		// TODO: should be goroutined
 		productData, err := parseAndValidateData(h)
 		if err != nil {
 			log.Err(err).Msgf("unable to parse product data")
 		}
-		database.SaveToDB[*ProductData](&productData)
+		err = database.SaveToDB[*ProductData](&productData, []byte(productData.UPC))
+		if err != nil {
+			log.Err(err).Msgf("unable to put data to db")
+		}
 	})
 
 	nested.OnRequest(func(r *colly.Request) {
@@ -77,9 +81,8 @@ func Crawling() {
 	})
 
 	c.OnHTML("article.product_pod", func(e *colly.HTMLElement) {
-
 		url := e.ChildAttr("h3>a", "href")
-		nested.Visit(e.Request.AbsoluteURL(url))
+		go nested.Visit(e.Request.AbsoluteURL(url))
 
 	})
 
@@ -95,6 +98,9 @@ func Crawling() {
 	})
 
 	c.Visit(utils.GetEnvOrDefault("SCRAPE_URL", ""))
+	c.Wait()
+	nested.Wait()
+	log.Info().Msg("finished scraping")
 }
 
 func parseAndValidateData(h *colly.HTMLElement) (ProductData, error) {

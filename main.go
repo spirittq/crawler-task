@@ -2,6 +2,7 @@ package main
 
 import (
 	"crawler-task/core"
+	"crawler-task/database"
 	"crawler-task/utils"
 	"os"
 	"os/signal"
@@ -12,6 +13,9 @@ import (
 )
 
 func main() {
+
+	database.InitDB()
+	defer database.Database.Close()
 
 	s, err := gocron.NewScheduler()
 	if err != nil {

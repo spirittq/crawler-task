@@ -8,6 +8,7 @@ require (
 	github.com/gocolly/colly v1.2.0
 	github.com/rs/zerolog v1.31.0
 	github.com/shopspring/decimal v1.3.1
+	go.etcd.io/bbolt v1.3.8
 )
 
 require (
