@@ -2,6 +2,7 @@ package main
 
 import (
 	"crawler-task/core"
+	"crawler-task/utils"
 	"os"
 	"os/signal"
 	"time"
@@ -19,7 +20,7 @@ func main() {
 
 	_, err = s.NewJob(
 		gocron.DurationJob(
-			5*time.Hour,
+			time.Duration(utils.GetEnvAsIntOrDefault("INTERVAL_SECONDS", 120))*time.Second,
 		),
 		gocron.NewTask(
 			core.Crawling,
