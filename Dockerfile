@@ -35,4 +35,6 @@ WORKDIR /app
 
 COPY --from=build /src/crawler-task .
 
+EXPOSE 3000
+
 CMD [ "./crawler-task" ]

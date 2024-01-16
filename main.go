@@ -4,6 +4,7 @@ import (
 	"crawler-task/core"
 	"crawler-task/database"
 	"crawler-task/utils"
+	"crawler-task/web"
 	"os"
 	"os/signal"
 	"time"
@@ -16,7 +17,8 @@ func main() {
 
 	database.InitDB()
 	defer database.Database.Close()
-
+	go web.App()
+	
 	s, err := gocron.NewScheduler()
 	if err != nil {
 		log.Fatal().Msg("Could not start new scheduler")
