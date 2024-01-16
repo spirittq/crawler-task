@@ -1,0 +1,19 @@
+package grpc;
+
+option go_package = "shared/grpc";
+
+service Crawler {
+    rpc CrawlerDataIncoming (stream CrawlerRequest) returns (CrawlerResponse) {}
+}
+
+message CrawlerRequest {
+    required string name = 1;
+    required string availability = 2;
+    required string upc = 3;
+    required string priceWithoutTax = 4;
+    required string tax = 5;
+}
+
+message CrawlerResponse {
+    required bool success = 1;
+}

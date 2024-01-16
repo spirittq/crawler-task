@@ -1,0 +1,6 @@
+go 1.21
+
+use .
+use ./crawler
+use ./data_manager
+use ./shared

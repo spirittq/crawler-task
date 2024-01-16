@@ -1,9 +1,10 @@
 package database
 
 import (
-	"crawler-task/utils"
 	"encoding/json"
 	"errors"
+	"shared/utils"
+	"sync"
 
 	"github.com/rs/zerolog/log"
 
@@ -12,10 +13,12 @@ import (
 
 var Database *bbolt.DB
 var DB_BUCKET_NAME = utils.GetEnvOrDefault("DB_BUCKET_NAME", "")
+var DB_NAME = utils.GetEnvOrDefault("DB_NAME", "")
+var mu = sync.Mutex{}
 
 func InitDB() {
 	var err error
-	Database, err = bbolt.Open(utils.GetEnvOrDefault("DB_NAME", ""), 0600, nil)
+	Database, err = bbolt.Open(DB_NAME, 0600, nil)
 	if err != nil {
 		log.Fatal().Msgf("could not open database: %v", err)
 	}
@@ -28,6 +31,8 @@ func SaveToDB[T any](data T, key []byte) error {
 			return err
 		}
 
+		mu.Lock()
+
 		item := bucket.Get(key)
 		if item != nil {
 			return errors.New("record already exists in database")
@@ -37,7 +42,22 @@ func SaveToDB[T any](data T, key []byte) error {
 		if err != nil {
 			return err
 		}
-		return bucket.Put(key, json)
+		err = bucket.Put(key, json)
+		mu.Unlock()
+		return err
 	})
 	return err
+}
+
+func FetchAllFromDB() ([][]byte, error) {
+	var data [][]byte
+	err := Database.Update(func(tx *bbolt.Tx) error {
+		bucket := tx.Bucket([]byte(DB_BUCKET_NAME))
+		err := bucket.ForEach(func(k, v []byte) error {
+			data = append(data, v)
+			return nil
+		})
+		return err
+	})
+	return data, err
 }
