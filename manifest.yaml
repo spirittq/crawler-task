@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crawler-data-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crawler-data-manager
+  template:
+    metadata:
+      labels:
+        app: crawler-data-manager
+    spec:
+      containers:
+      - name: crawler-data-manager
+        image: spirittq/data_manager:latest
+        env:
+        - name: SERVER_PORT
+          value: "50051"
+        - name: SERVER_API_PORT
+          value: "3000"
+        - name: DB_NAME
+          value: test.db
+        - name: DB_BUCKET_NAME
+          value: books
+        ports:
+        - containerPort: 3000
+        livenessProbe:
+            httpGet:
+              path: /health_check
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: crawler-data-manager
+spec:
+  selector:
+    app: crawler-data-manager
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      nodePort: 31000
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+  type: NodePort
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: crawler
+spec:
+  schedule: "* */1 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: crawler
+            image: spirittq/crawler:latest
+            env:
+            - name: SCRAPE_URL
+              value: https://books.toscrape.com/
+            - name: ALLOWED_DOMAIN
+              value: books.toscrape.com
+            - name: SERVER_PORT
+              value: "50051"
+            - name: ASYNC_COUNT
+              value: "25"
+            - name: SERVER_DOMAIN
+              value: crawler-data-manager
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: crawler-initial
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: crawler-initial
+        image: spirittq/crawler:latest
+        env:
+            - name: SCRAPE_URL
+              value: https://books.toscrape.com/
+            - name: ALLOWED_DOMAIN
+              value: books.toscrape.com
+            - name: SERVER_PORT
+              value: "50051"
+            - name: ASYNC_COUNT
+              value: "25"
+            - name: SERVER_DOMAIN
+              value: crawler-data-manager
+      initContainers:
+        - name: crawler-initial-wait
+          image: spirittq/crawler:latest
+          command: ['sh', '-c', 'until curl crawler-data-manager:3000/health_check; do echo waiting; sleep 2; done']
