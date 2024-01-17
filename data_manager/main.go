@@ -17,7 +17,6 @@ import (
 )
 
 var SERVER_PORT = utils.GetEnvAsIntOrDefault("SERVER_PORT", 0)
-var SERVER_DOMAIN = utils.GetEnvOrDefault("SERVER_DOMAIN", "")
 
 type server struct {
 	pb.CrawlerServer
@@ -57,7 +56,7 @@ func main() {
 	log.Info().Msg("database initialized successfully")
 
 	log.Info().Msgf("starting to listen on port %v", SERVER_PORT)
-	lis, err := net.Listen("tcp", fmt.Sprintf("%v:%d", SERVER_DOMAIN, SERVER_PORT))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", SERVER_PORT))
 	if err != nil {
 		log.Fatal().Msgf("failed to listen: %v", err)
 	}

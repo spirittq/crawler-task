@@ -20,11 +20,7 @@ func main() {
 
 	log.Info().Msg("connecting to the server")
 	conn, err := grpc.Dial(
-		fmt.Sprintf(
-			"%v:%v", SERVER_DOMAIN, SERVER_PORT,
-		),
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-	)
+		fmt.Sprintf("%v:%v", SERVER_DOMAIN, SERVER_PORT), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatal().Msgf("did not connect: %v", err)
 	}

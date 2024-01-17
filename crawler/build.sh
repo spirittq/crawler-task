@@ -1,9 +1,8 @@
 #!/bin/sh
-source .env
-docker build . -t crawler-task:latest \
+source crawler/.env
+docker build -f crawler/Dockerfile . -t crawler:latest \
     --build-arg SCRAPE_URL=$SCRAPE_URL \
     --build-arg ALLOWED_DOMAIN=$ALLOWED_DOMAIN \
-    --build-arg INTERVAL_SECONDS=$INTERVAL_SECONDS \
-    --build-arg DB_NAME=$DB_NAME \
-    --build-arg DB_BUCKET_NAME=$DB_BUCKET_NAME \
-    --build-arg ASYNC_COUNT=$ASYNC_COUNT
+    --build-arg SERVER_PORT=$SERVER_PORT \
+    --build-arg ASYNC_COUNT=$ASYNC_COUNT \
+    --build-arg SERVER_DOMAIN=$SERVER_DOMAIN

@@ -2,12 +2,25 @@ module crawler
 
 go 1.21
 
+require shared v1.0.0
+
+replace shared => ../shared
+
 require (
 	github.com/gocolly/colly v1.2.0
 	github.com/rs/zerolog v1.31.0
 )
 
-require google.golang.org/genproto/googleapis/rpc v0.0.0-20231002182017-d307bd883b97 // indirect
+require (
+	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
+	github.com/go-playground/locales v0.14.1 // indirect
+	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.17.0 // indirect
+	github.com/leodido/go-urn v1.2.4 // indirect
+	github.com/shopspring/decimal v1.3.1 // indirect
+	golang.org/x/crypto v0.14.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20231002182017-d307bd883b97 // indirect
+)
 
 require (
 	github.com/PuerkitoBio/goquery v1.5.1 // indirect
@@ -29,5 +42,5 @@ require (
 	golang.org/x/text v0.13.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/grpc v1.60.1
-	google.golang.org/protobuf v1.31.0 // indirect
+	google.golang.org/protobuf v1.32.0 // indirect
 )

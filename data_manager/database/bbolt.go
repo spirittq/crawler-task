@@ -2,7 +2,6 @@ package database
 
 import (
 	"encoding/json"
-	"errors"
 	"shared/utils"
 	"sync"
 
@@ -31,11 +30,10 @@ func SaveToDB[T any](data T, key []byte) error {
 			return err
 		}
 
-		mu.Lock()
-
 		item := bucket.Get(key)
 		if item != nil {
-			return errors.New("record already exists in database")
+			log.Warn().Msg("record already exists in database")
+			return nil
 		}
 
 		json, err := json.Marshal(data)
@@ -43,7 +41,6 @@ func SaveToDB[T any](data T, key []byte) error {
 			return err
 		}
 		err = bucket.Put(key, json)
-		mu.Unlock()
 		return err
 	})
 	return err
@@ -52,8 +49,11 @@ func SaveToDB[T any](data T, key []byte) error {
 func FetchAllFromDB() ([][]byte, error) {
 	var data [][]byte
 	err := Database.Update(func(tx *bbolt.Tx) error {
-		bucket := tx.Bucket([]byte(DB_BUCKET_NAME))
-		err := bucket.ForEach(func(k, v []byte) error {
+		bucket, err := tx.CreateBucketIfNotExists([]byte(DB_BUCKET_NAME))
+		if err != nil {
+			return err
+		}
+		err = bucket.ForEach(func(k, v []byte) error {
 			data = append(data, v)
 			return nil
 		})

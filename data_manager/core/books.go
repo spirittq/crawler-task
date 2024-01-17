@@ -71,6 +71,7 @@ func GetBooks() ([]byte, error) {
 	var books []BookData
 	data, err := database.FetchAllFromDB()
 	if err != nil {
+		log.Err(err).Msg("failed to fetch from db")
 		return []byte{}, err
 	}
 	for _, row := range data {
