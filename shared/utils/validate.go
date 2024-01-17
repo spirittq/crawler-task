@@ -6,7 +6,7 @@ import (
 
 var validateSingleton *validator.Validate
 
-func intiValidator() *validator.Validate {
+func initValidator() *validator.Validate {
 	if validateSingleton == nil {
 		validateSingleton = validator.New()
 	}
@@ -14,7 +14,7 @@ func intiValidator() *validator.Validate {
 }
 
 func Validate[T any](structToValidate T) error {
-	validate := intiValidator()
+	validate := initValidator()
 	err := validate.Struct(structToValidate)
 	return err
 }
