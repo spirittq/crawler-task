@@ -11,12 +11,14 @@ type server struct{}
 
 var SERVER_API_PORT = utils.GetEnvAsIntOrDefault("SERVER_API_PORT", 0)
 
+// endpoint for healtcheck
 func (s *server) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"healthCheck": "OK"}`))
 }
 
+// endpoint to fetch all books from DB
 func (s *server) GetBooks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	jsonData, err := core.GetBooks()
@@ -27,6 +29,7 @@ func (s *server) GetBooks(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
+// simple API
 func App() {
 	s := &server{}
 	http.HandleFunc("/health_check", s.HealthCheck)

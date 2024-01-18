@@ -3,7 +3,6 @@ package database
 import (
 	"encoding/json"
 	"shared/utils"
-	"sync"
 
 	"github.com/rs/zerolog/log"
 
@@ -13,8 +12,8 @@ import (
 var Database *bbolt.DB
 var DB_BUCKET_NAME = utils.GetEnvOrDefault("DB_BUCKET_NAME", "")
 var DB_NAME = utils.GetEnvOrDefault("DB_NAME", "")
-var mu = sync.Mutex{}
 
+// Initiates DB
 func InitDB() {
 	var err error
 	Database, err = bbolt.Open(DB_NAME, 0600, nil)
@@ -23,6 +22,7 @@ func InitDB() {
 	}
 }
 
+// Saves data to db
 func SaveToDB[T any](data T, key []byte) error {
 	err := Database.Update(func(tx *bbolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte(DB_BUCKET_NAME))
@@ -46,6 +46,7 @@ func SaveToDB[T any](data T, key []byte) error {
 	return err
 }
 
+// Fetches all data from db
 func FetchAllFromDB() ([][]byte, error) {
 	var data [][]byte
 	err := Database.Update(func(tx *bbolt.Tx) error {

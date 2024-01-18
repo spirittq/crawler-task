@@ -22,6 +22,7 @@ type server struct {
 	pb.CrawlerServer
 }
 
+// server method for incoming request from client. Parse, validate & save data to db.
 func (s *server) CrawlerDataIncoming(stream pb.Crawler_CrawlerDataIncomingServer) error {
 	var count int
 	for {

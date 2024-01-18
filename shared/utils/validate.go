@@ -6,6 +6,7 @@ import (
 
 var validateSingleton *validator.Validate
 
+// Initiate validator if it is not initialized yet
 func initValidator() *validator.Validate {
 	if validateSingleton == nil {
 		validateSingleton = validator.New()
@@ -13,6 +14,7 @@ func initValidator() *validator.Validate {
 	return validateSingleton
 }
 
+// Validate provided type data
 func Validate[T any](structToValidate T) error {
 	validate := initValidator()
 	err := validate.Struct(structToValidate)

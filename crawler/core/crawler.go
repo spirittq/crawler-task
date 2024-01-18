@@ -22,6 +22,7 @@ var ALLOWED_DOMAIN = utils.GetEnvOrDefault("ALLOWED_DOMAIN", "")
 var ASYNC_COUNT = utils.GetEnvAsIntOrDefault("ASYNC_COUNT", 5)
 var SCRAPE_URL = utils.GetEnvOrDefault("SCRAPE_URL", "")
 
+// Starts colly collector and scrapes web data. When relevant data is found, sends it to the gRPC server
 func Crawling(stream pb.Crawler_CrawlerDataIncomingClient) {
 
 	c := colly.NewCollector(
@@ -35,12 +36,14 @@ func Crawling(stream pb.Crawler_CrawlerDataIncomingClient) {
 		log.Info().Msgf("Visiting %v", r.URL)
 	})
 
+	// On specified element visits nested page to scrape relevant data
 	c.OnHTML("article.product_pod", func(e *colly.HTMLElement) {
 		url := e.ChildAttr("h3>a", "href")
 		go nested.Visit(e.Request.AbsoluteURL(url))
 
 	})
 
+	// On specified element vists next page and continues crawling until there are no next pages
 	c.OnHTML("ul.pager>li.next>a", func(e *colly.HTMLElement) {
 		nextPage := e.Attr("href")
 		if nextPage != "" {
@@ -52,6 +55,7 @@ func Crawling(stream pb.Crawler_CrawlerDataIncomingClient) {
 		log.Info().Msgf("Accessing product page: %v", r.URL)
 	})
 
+	// On specified element collects relevant data and sends gRPC stream to the server
 	nested.OnHTML("article.product_page", func(h *colly.HTMLElement) {
 
 		name := h.ChildText("div.row>div.product_main>h1")

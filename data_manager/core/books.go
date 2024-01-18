@@ -23,6 +23,7 @@ type BookData struct {
 	Tax             *utils.CustomDecimal `validate:"required"`
 }
 
+// bookData method to parse availability data
 func (pd *BookData) parseAvailabilty(availability string) {
 	digits := reAvailability.FindString(availability)
 	digitsInt, err := strconv.Atoi(digits)
@@ -33,6 +34,7 @@ func (pd *BookData) parseAvailabilty(availability string) {
 	pd.Availability = &digitsInt
 }
 
+// bookData method to parce price fields
 func (pd *BookData) parcePrice(price string, isTax bool) {
 	digits := rePrice.FindString(price)
 	digitsDecimal, err := decimal.NewFromString(digits)
@@ -48,6 +50,7 @@ func (pd *BookData) parcePrice(price string, isTax bool) {
 	}
 }
 
+// parses and validates bookData and saves to db
 func ParseAndValidate(in *pb.CrawlerRequest) error {
 
 	bookData := BookData{
@@ -67,8 +70,9 @@ func ParseAndValidate(in *pb.CrawlerRequest) error {
 	return err
 }
 
+// fetches all books data from db
 func GetBooks() ([]byte, error) {
-	var books []BookData
+	books := []BookData{}
 	data, err := database.FetchAllFromDB()
 	if err != nil {
 		log.Err(err).Msg("failed to fetch from db")
@@ -90,5 +94,4 @@ func GetBooks() ([]byte, error) {
 
 	jsonData, err := json.Marshal(response)
 	return jsonData, err
-
 }

@@ -5,6 +5,7 @@ import (
 	"strconv"
 )
 
+// Extract env variable based on the key or fallback to provided default value if key doesn't exist
 func GetEnvOrDefault(key, fallback string) string {
 	value := os.Getenv(key)
 
@@ -14,6 +15,7 @@ func GetEnvOrDefault(key, fallback string) string {
 	return value
 }
 
+// Extract env variable as integer based on the key or fallback to provided default value if key doesn't exist
 func GetEnvAsIntOrDefault(key string, fallback int) int {
 	value := os.Getenv(key)
 	intValue, err := strconv.Atoi(value)
