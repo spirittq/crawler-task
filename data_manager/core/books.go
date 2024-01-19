@@ -50,8 +50,22 @@ func (pd *BookData) parcePrice(price string, isTax bool) {
 	}
 }
 
+func saveToDB(pd *BookData) error {
+	return database.SaveToDB[BookData](*pd, []byte(*pd.Upc))
+}
+
+type BookDataSave struct {
+	SaveToDB func(pd *BookData) error
+}
+
+var val interface{} = BookDataSave{
+	SaveToDB: saveToDB,
+}
+
 // parses and validates bookData and saves to db
 func ParseAndValidate(in *pb.CrawlerRequest) error {
+
+	save := val.(BookDataSave)
 
 	bookData := BookData{
 		Name: in.Name,
@@ -66,12 +80,12 @@ func ParseAndValidate(in *pb.CrawlerRequest) error {
 		return err
 	}
 
-	err = database.SaveToDB[BookData](bookData, []byte(*bookData.Upc))
+	err = save.SaveToDB(&bookData)
 	return err
 }
 
 // fetches all books data from db
-func GetBooks() ([]byte, error) {
+var GetBooks = func() ([]byte, error) {
 	books := []BookData{}
 	data, err := database.FetchAllFromDB()
 	if err != nil {
